@@ -1,0 +1,2 @@
+# vegamonitor
+VegaHashrate monitor
