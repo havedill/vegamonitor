@@ -1,4 +1,3 @@
-
 import datetime
 import time
 import re
@@ -6,20 +5,33 @@ import os
 import subprocess
 from file_read_backwards import FileReadBackwards
 
-#please update the below to your ifle paths
-pattern = "Totals:\s+[0-9]+\.[0-9]+\s([0-9]+).*$"
+#################CONFIG SETTINGS#################
+#Todo: split this into a seperate file?
+#
+#Notes: By default i have all these executables set to always run as administrator!
 logfile = r"C:\users\YOURUSER\desktop\xmr-out.log"
 devconpath = r"C:\users\YOURUSER\desktop\devcon.exe"
 overdrivepath = r"C:\users\YOURUSER\desktop\overdriventool.exe"
+# "Stable" would be replaced with your saved config's name in OverDriveNTool
 overdriveargs = '-p1Stable -p2Stable'
 xmrstakpath = r"C:\users\YOURUSER\desktop\Release"
 procname = "xmr-stak.exe"
 hashthreshold = 3700
-timethreshold = 5
+timethreshold = 10
 
-def checkapi():
-    #utilize webapi to verify my hashrate is correct on the pool as well
-    return 0
+pattern = "Totals:\s+[0-9]+\.[0-9]+\s([0-9]+).*$"
+
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 
 def tail(filename, pattern, maxlines=20):
     with FileReadBackwards(filename, encoding="utf-8") as frb:
@@ -36,8 +48,12 @@ def tail(filename, pattern, maxlines=20):
 #Gets modified time of the logfile. Confirms it is still updating.
 def mtime(logfile, timethreshold):
     lastmtime = datetime.datetime.fromtimestamp(os.path.getmtime(logfile))
+    testmtime =  datetime.datetime.fromtimestamp(os.stat(logfile).st_mtime)
     cutoff = datetime.datetime.now() - datetime.timedelta(minutes=timethreshold)
-    print("Modifed: {} Threshold: {}".format(lastmtime, cutoff))
+    diff = (lastmtime - cutoff) / datetime.timedelta(minutes=1)
+    print("Logfile last modified {} minutes ago".format(diff))
+    if diff < 3:
+        print(bcolors.WARNING + "Last modified time was {} minutes ago. Potential restart incoming".format(diff) + bcolors.ENDC)
     if lastmtime > cutoff:
         #The file is updating actively
         return True
@@ -53,24 +69,20 @@ def resetdrivers(devconpath):
     #reset the drivers using devcon. Note this currently is using the CWD of the script, so it needs to be in the same location as this python script
     print('Resetting Drivers')
     r = subprocess.Popen('{} disable "PCI\VEN_1002&DEV_687F*"'.format(devconpath))
-    #print('Disabling: {}'.format(r))
     time.sleep(3)
     r = subprocess.Popen('{} enable "PCI\VEN_1002&DEV_687F*"'.format(devconpath))
-    #print('Enabling: {}'.format(r))
     #sleep for 10 seconds so overdrive doesn't get fucked
     time.sleep(10)
 
 def overdrive(overdrivepath, overdriveargs):
     print('Applying Overdrive configs')
     r = subprocess.Popen('{} {}'.format(overdrivepath, overdriveargs), shell=True)
-    #print('Return {}'.format(r))
 
 while True:
     currenthash = tail(logfile, pattern)
     updating = mtime(logfile, timethreshold)
-    print('Hashrate: {}\nLog updating: {}'.format(currenthash, updating))
     if int(currenthash) < hashthreshold:
-        print('Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold))
+        print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
         stopprocess(procname)
         resetdrivers(devconpath)
         overdrive(overdrivepath, overdriveargs)
@@ -79,7 +91,7 @@ while True:
         print('Waiting 90 seconds to get new average hash rates...')
         time.sleep(90)
     if updating == False:
-        print('The logfile ({}) hasn\'t been updating for {} minutes. Restart sequence beginning'.format(logfile, timethreshold))
+        print(bcolors.FAIL + 'The logfile ({}) hasn\'t been updating for {} minutes. Restart sequence beginning'.format(logfile, timethreshold) + bcolors.ENDC)
         stopprocess(procname)
         resetdrivers(devconpath)
         overdrive(overdrivepath, overdriveargs)
@@ -87,5 +99,6 @@ while True:
         subprocess.Popen('start cmd /C "{}\{}"'.format(xmrstakpath, procname), shell=True)
         print('Waiting 90 seconds to get new average hash rates...')
         time.sleep(90)
-
-    time.sleep(5)
+    print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
+    print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}'.format(currenthash, updating) + bcolors.ENDC)
+    time.sleep(10)
