@@ -18,3 +18,7 @@ What it does:
 - Starts a new session of XMR-Stak
 
 I want to add some API stuff to hopefully let me check my rates on the pool as well if needed. But since i watch the modified time...this might not be needed
+
+
+No need to donate, but if you'd like to:
+42uEk7j5ieJAyRhCcUjXkrhsSLe7J8WwXN86ubZfA5ne7RUrEJL2XhoYFtY71UgJiVG1CEZXwKi545cMB42AAdxV3MVT74Z
