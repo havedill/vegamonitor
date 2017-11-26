@@ -22,3 +22,21 @@ I want to add some API stuff to hopefully let me check my rates on the pool as w
 
 No need to donate, but if you'd like to:
 42uEk7j5ieJAyRhCcUjXkrhsSLe7J8WwXN86ubZfA5ne7RUrEJL2XhoYFtY71UgJiVG1CEZXwKi545cMB42AAdxV3MVT74Z
+
+
+
+
+DEPENDENCIES (Set everything to always run as admin):
+
+XMR-Stak - I'm typically a CastXMR fan, but since it is unable to write to a logfile, i opted to switch over to XMR-Stak for this.
+
+	- Compiling xmr-stak guide i used (to change donation level edit donate-level.h prior)
+		- I ran with CUDA disabled since i have no NVIDIA cards.
+	https://docs.google.com/document/d/1JoplwVyVQDo4ru8prsOD_kbMxeRvaACBiww3sSj1klA/mobilebasic
+
+Devcon.exe - I followed the guide by AmirHossein to get the executable for this
+https://superuser.com/questions/1002950/quick-method-to-install-devcon-exe
+
+OverDriveNTool - Make your "Stable" profile. I keep these on my desktop, and have it named "Stable" (as seen in arguments"
+https://forums.guru3d.com/threads/overdriventool-tool-for-amd-gpus.416116/
+
