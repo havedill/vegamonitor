@@ -33,13 +33,13 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-def tail(filename, pattern, maxlines=20):
+def tail(filename, pattern, maxlines=60):
     with FileReadBackwards(filename, encoding="utf-8") as frb:
         lines=0
         for l in frb:
             lines += 1
             if lines == maxlines:
-                print("I was unable to detect the Totals string in the block i looked at")
+                print(bcolor.FAIL + "I was unable to detect the Totals string in the block i looked at, did you update h_print_time + verbose mode on XMR-Stak?" + bcolors.ENDC)
                 return 0
             if 'Totals' in l:
                 hashrate = re.search(pattern, l)
