@@ -34,16 +34,22 @@ class bcolors:
 
 
 def tail(filename, pattern, maxlines=60):
-    with FileReadBackwards(filename, encoding="utf-8") as frb:
-        lines=0
-        for l in frb:
-            lines += 1
-            if lines == maxlines:
-                print(bcolor.FAIL + "I was unable to detect the Totals string in the block i looked at, did you update h_print_time + verbose mode on XMR-Stak?" + bcolors.ENDC)
-                return 0
-            if 'Totals' in l:
-                hashrate = re.search(pattern, l)
-                return hashrate.group(1)
+    found = None
+    while True:
+        with FileReadBackwards(filename, encoding="utf-8") as frb:
+            lines=0
+            for l in frb:
+                lines += 1
+                if lines == maxlines:
+                    print(bcolor.FAIL + "I was unable to detect the Totals string in the block i looked at, did you update h_print_time + verbose mode on XMR-Stak?" + bcolors.ENDC)
+                    return 0
+                if 'Totals' in l:
+                    hashrate = re.search(pattern, l)
+                    found = hashrate.group(1)
+                    if found:
+                        return hashrate.group(1)
+        print(bcolors.WARNING + "No 60s hash found yet. Waiting for that to appear" + bcolors.ENDC)
+        time.sleep(10)
 
 #Gets modified time of the logfile. Confirms it is still updating.
 def mtime(logfile, timethreshold):
@@ -68,11 +74,7 @@ def stopprocess(procname):
 def resetdrivers(devconpath):
     #reset the drivers using devcon. Note this currently is using the CWD of the script, so it needs to be in the same location as this python script
     print('Resetting Drivers')
-    r = subprocess.Popen('{} disable "PCI\VEN_1002&DEV_687F*"'.format(devconpath))
-    time.sleep(3)
-    r = subprocess.Popen('{} enable "PCI\VEN_1002&DEV_687F*"'.format(devconpath))
-    #sleep for 10 seconds so overdrive doesn't get fucked
-    time.sleep(10)
+    r = subprocess.Popen('{} restart "PCI\VEN_1002&DEV_687F*"'.format(devconpath))
 
 def overdrive(overdrivepath, overdriveargs):
     print('Applying Overdrive configs')
