@@ -41,15 +41,14 @@ def tail(filename, pattern, maxlines=60):
             for l in frb:
                 lines += 1
                 if lines == maxlines:
-                    print(bcolor.FAIL + "I was unable to detect the Totals string in the block i looked at, did you update h_print_time + verbose mode on XMR-Stak?" + bcolors.ENDC)
-                    return 0
+                    print(bcolors.FAIL + "I was unable to detect the Totals string in the block i looked at, did you update h_print_time + verbose mode on XMR-Stak?" + bcolors.ENDC)
                 if 'Totals' in l:
                     hashrate = re.search(pattern, l)
-                    found = hashrate.group(1)
-                    if found:
+                    if hashrate:
                         return hashrate.group(1)
         print(bcolors.WARNING + "No 60s hash found yet. Waiting for that to appear" + bcolors.ENDC)
         time.sleep(10)
+
 
 #Gets modified time of the logfile. Confirms it is still updating.
 def mtime(logfile, timethreshold):
