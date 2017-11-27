@@ -47,12 +47,12 @@ def tail(filename, pattern, maxlines=60):
 #Gets modified time of the logfile. Confirms it is still updating.
 def mtime(logfile, timethreshold):
     lastmtime = datetime.datetime.fromtimestamp(os.path.getmtime(logfile))
-    testmtime =  datetime.datetime.fromtimestamp(os.stat(logfile).st_mtime)
     cutoff = datetime.datetime.now() - datetime.timedelta(minutes=timethreshold)
     diff = (lastmtime - cutoff) / datetime.timedelta(minutes=1)
-    print("Logfile last modified {} minutes ago".format(diff))
-    if diff < 3:
-        print(bcolors.WARNING + "Last modified time was {} minutes ago. Potential restart incoming".format(diff) + bcolors.ENDC)
+    if diff < (timethreshold / 2):
+        print(bcolors.WARNING + "Potential restart incoming. {} minutes until we deem stale".format(diff) + bcolors.ENDC)
+    else:
+        print("Logfile timeout countdown {} minutes".format(diff))
     if lastmtime > cutoff:
         #The file is updating actively
         return True
