@@ -40,13 +40,14 @@ def tail(filename, pattern, maxlines=60):
             lines=0
             for l in frb:
                 lines += 1
-                if lines == maxlines:
-                    print(bcolors.FAIL + "I was unable to detect the Totals string in the block i looked at, did you update h_print_time + verbose mode on XMR-Stak?" + bcolors.ENDC)
+                #I dont want to scan old logs. So break this loop if before we go too deep.
+                if lines > maxlines:
+                    continue
                 if 'Totals' in l:
                     hashrate = re.search(pattern, l)
                     if hashrate:
                         return hashrate.group(1)
-        print(bcolors.WARNING + "No 60s hash found yet. Waiting for that to appear" + bcolors.ENDC)
+        print(bcolors.WARNING + "No 60s hash found yet. Waiting for that to appear.." + bcolors.ENDC)
         time.sleep(10)
 
 
