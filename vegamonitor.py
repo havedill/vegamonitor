@@ -20,7 +20,6 @@ hashthreshold = 3700
 timethreshold = 10
 
 pattern = "Totals:\s+[0-9]+\.[0-9]+\s([0-9]+).*$"
-restartreason = []
 
 class bcolors:
     HEADER = '\033[95m'
@@ -84,7 +83,6 @@ def startmining(xmrstakpath, procname):
 
 while True:
     print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
-    now = datetime.datetime.now()
     currenthash = tail(logfile, pattern)
     updating = mtime(logfile, timethreshold)
     if int(currenthash) < hashthreshold:
@@ -94,7 +92,6 @@ while True:
         overdrive(overdrivepath, overdriveargs)
         os.chdir(xmrstakpath)
         startmining(xmrstakpath, procname)
-        restartreason += "{} - Low Hashrate ({})".format(now, currenthash)
         print('Waiting 90 seconds to get new average hash rates...')
         time.sleep(90)
     if updating == False:
@@ -104,10 +101,7 @@ while True:
         overdrive(overdrivepath, overdriveargs)
         os.chdir(xmrstakpath)
         startmining(xmrstakpath, procname)
-        restartreason += "{} - Logfile timeout".format(now)
         print('Waiting 90 seconds to get new average hash rates...')
         time.sleep(90)
     print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}'.format(currenthash, updating) + bcolors.ENDC)
-    if restartreason:
-        print(bcolors.WARNING + '{}'.format(restartreason) + bcolors.ENDC)
     time.sleep(10)
