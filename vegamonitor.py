@@ -94,7 +94,11 @@ while True:
     if int(currenthash) < hashthreshold:
         print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
         stopprocess(procname)
-        os.remove(logfile)
+        time.sleep(4)
+        try:
+            os.remove(logfile)
+        except OSError:
+            pass
         resetdrivers(devconpath)
         overdrive(overdrivepath, overdriveargs)
         os.chdir(xmrstakpath)
@@ -105,7 +109,10 @@ while True:
     if updating == False:
         print(bcolors.FAIL + 'The logfile ({}) hasn\'t been updating for {} minutes. Restart sequence beginning'.format(logfile, timethreshold) + bcolors.ENDC)
         stopprocess(procname)
-        os.remove(logfile)
+        try:
+            os.remove(logfile)
+        except OSError:
+            pass
         resetdrivers(devconpath)
         overdrive(overdrivepath, overdriveargs)
         os.chdir(xmrstakpath)
