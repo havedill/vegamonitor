@@ -75,6 +75,8 @@ def resetdrivers(devconpath):
     #reset the drivers using devcon. Note this currently is using the CWD of the script, so it needs to be in the same location as this python script
     print('Resetting Drivers')
     r = subprocess.Popen('{} restart "PCI\VEN_1002&DEV_687F*"'.format(devconpath))
+    #Starting xmr-stak too fast afterwards was throwing me a gpu error on occasion
+    time.sleep(10)
 
 def overdrive(overdrivepath, overdriveargs):
     print('Applying Overdrive configs')
@@ -92,6 +94,7 @@ while True:
     if int(currenthash) < hashthreshold:
         print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
         stopprocess(procname)
+        os.remove(logfile)
         resetdrivers(devconpath)
         overdrive(overdrivepath, overdriveargs)
         os.chdir(xmrstakpath)
@@ -102,6 +105,7 @@ while True:
     if updating == False:
         print(bcolors.FAIL + 'The logfile ({}) hasn\'t been updating for {} minutes. Restart sequence beginning'.format(logfile, timethreshold) + bcolors.ENDC)
         stopprocess(procname)
+        os.remove(logfile)
         resetdrivers(devconpath)
         overdrive(overdrivepath, overdriveargs)
         os.chdir(xmrstakpath)
