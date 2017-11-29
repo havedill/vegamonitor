@@ -120,8 +120,8 @@ while True:
             restartreason += "\n{} - Logfile timeout".format(now)
             print('Waiting 90 seconds to get new average hash rates...')
             time.sleep(90)
-            print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
-            if restartreason:
-                print(bcolors.BOLD + '======Reasons for Restarts======' + bcolors.ENDC)
-                print(bcolors.WARNING + '{}\n'.format(restartreason) + bcolors.ENDC)
+        print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
+        if restartreason:
+            print(bcolors.BOLD + '======Reasons for Restarts======' + bcolors.ENDC)
+            print(bcolors.WARNING + '{}\n'.format(restartreason) + bcolors.ENDC)
     time.sleep(10)
