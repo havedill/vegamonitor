@@ -32,7 +32,6 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-
 def tail(filename, pattern, maxlines=60):
     found = None
     while True:
@@ -49,7 +48,6 @@ def tail(filename, pattern, maxlines=60):
                         return hashrate.group(1)
         print(bcolors.WARNING + "No 60s hash found yet. Waiting for that to appear.." + bcolors.ENDC)
         time.sleep(10)
-
 
 #Gets modified time of the logfile. Confirms it is still updating.
 def mtime(logfile, timethreshold):
@@ -89,39 +87,41 @@ def startmining(xmrstakpath, procname):
 while True:
     print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
     now = datetime.datetime.now()
-    currenthash = tail(logfile, pattern)
-    updating = mtime(logfile, timethreshold)
-    if int(currenthash) < hashthreshold:
-        print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
-        stopprocess(procname)
-        time.sleep(4)
-        try:
-            os.remove(logfile)
-        except OSError:
-            pass
-        resetdrivers(devconpath)
-        overdrive(overdrivepath, overdriveargs)
-        os.chdir(xmrstakpath)
-        startmining(xmrstakpath, procname)
-        restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
-        print('Waiting 90 seconds to get new average hash rates...')
-        time.sleep(90)
-    if updating == False:
-        print(bcolors.FAIL + 'The logfile ({}) hasn\'t been updating for {} minutes. Restart sequence beginning'.format(logfile, timethreshold) + bcolors.ENDC)
-        stopprocess(procname)
-        try:
-            os.remove(logfile)
-        except OSError:
-            pass
-        resetdrivers(devconpath)
-        overdrive(overdrivepath, overdriveargs)
-        os.chdir(xmrstakpath)
-        startmining(xmrstakpath, procname)
-        restartreason += "\n{} - Logfile timeout".format(now)
-        print('Waiting 90 seconds to get new average hash rates...')
-        time.sleep(90)
-    print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
-    if restartreason:
-        print(bcolors.BOLD + '======Reasons for Restarts======' + bcolors.ENDC)
-        print(bcolors.WARNING + '{}\n'.format(restartreason) + bcolors.ENDC)
+    if os.path.exists(logfile):
+        currenthash = tail(logfile, pattern)
+        updating = mtime(logfile, timethreshold)
+        if int(currenthash) < hashthreshold:
+            print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
+            stopprocess(procname)
+            time.sleep(4)
+            try:
+                os.remove(logfile)
+            except OSError:
+                pass
+            resetdrivers(devconpath)
+            overdrive(overdrivepath, overdriveargs)
+            os.chdir(xmrstakpath)
+            startmining(xmrstakpath, procname)
+            restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
+            print('Waiting 90 seconds to get new average hash rates...')
+            time.sleep(90)
+        if updating == False:
+            print(bcolors.FAIL + 'The logfile ({}) hasn\'t been updating for {} minutes. Restart sequence beginning'.format(logfile, timethreshold) + bcolors.ENDC)
+            stopprocess(procname)
+            time.sleep(4)
+            try:
+                os.remove(logfile)
+            except OSError:
+                pass
+            resetdrivers(devconpath)
+            overdrive(overdrivepath, overdriveargs)
+            os.chdir(xmrstakpath)
+            startmining(xmrstakpath, procname)
+            restartreason += "\n{} - Logfile timeout".format(now)
+            print('Waiting 90 seconds to get new average hash rates...')
+            time.sleep(90)
+            print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
+            if restartreason:
+                print(bcolors.BOLD + '======Reasons for Restarts======' + bcolors.ENDC)
+                print(bcolors.WARNING + '{}\n'.format(restartreason) + bcolors.ENDC)
     time.sleep(10)
