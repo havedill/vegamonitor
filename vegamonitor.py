@@ -1,16 +1,27 @@
 import datetime
-import time
-import re
-import os
-import subprocess
 from file_read_backwards import FileReadBackwards
+import os
+import re
+import subprocess
+import time
+import yaml
 
-#################CONFIG SETTINGS#################
-#Todo: split this into a seperate file?
-#
-#Notes: By default i have all these executables set to always run as administrator!
-logfile = r"C:\users\YOURUSER\desktop\xmr-out.log"
-devconpath = r"C:\users\YOURUSER\desktop\devcon.exe"
+with open("config.yaml", 'r') as configfile:
+    cfg = yaml.load(configfile)
+
+while True:
+    selection = input ("Welcome, please choose which configs to load.\n1) XMR-Stak\n2)CastXMR")
+    if selection in ['1', '2']:
+        break
+
+if selection == '1':
+    app = 'xmr-stak'
+elif selection == '2':
+    app = 'castxmr'
+
+#load the global variables
+devconpath = cfg['global'][0]['devconpath']
+overdrivepath = cfg['']
 overdrivepath = r"C:\users\YOURUSER\desktop\overdriventool.exe"
 # "Stable" would be replaced with your saved config's name in OverDriveNTool
 overdriveargs = '-p1Stable -p2Stable'
@@ -79,9 +90,9 @@ def overdrive(overdrivepath, overdriveargs):
     print('Applying Overdrive configs')
     r = subprocess.Popen('{} {}'.format(overdrivepath, overdriveargs), shell=True)
 
-def startmining(xmrstakpath, procname):
+def startmining(path, procname):
     print('Spinning up executable')
-    subprocess.Popen('start cmd /C "{}\{}"'.format(xmrstakpath, procname), shell=True)
+    subprocess.Popen('start cmd /C "{}\{}"'.format(path, procname), shell=True)
 
 while True:
     print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
@@ -99,8 +110,8 @@ while True:
                 pass
             resetdrivers(devconpath)
             overdrive(overdrivepath, overdriveargs)
-            os.chdir(xmrstakpath)
-            startmining(xmrstakpath, procname)
+            os.chdir(path)
+            startmining(path, procname)
             restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
             print('Waiting 90 seconds to get new average hash rates...')
             time.sleep(90)
@@ -114,8 +125,8 @@ while True:
                 pass
             resetdrivers(devconpath)
             overdrive(overdrivepath, overdriveargs)
-            os.chdir(xmrstakpath)
-            startmining(xmrstakpath, procname)
+            os.chdir(path)
+            startmining(path, procname)
             restartreason += "\n{} - Logfile timeout".format(now)
             print('Waiting 90 seconds to get new average hash rates...')
             time.sleep(90)

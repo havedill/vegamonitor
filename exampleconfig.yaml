@@ -1,0 +1,16 @@
+global:
+  - hashthreshold: 3700
+  - timethreshold: 10
+  - devconpath: "C:\\users\\YOURUSER\\desktop\\devcon.exe"
+  - overdrivepath: "C:\\users\\YOURUSER\\desktop\\overdriventool.exe"
+  - overdriveargs: '-p1Stable -p2Stable'
+
+xmr-stak:
+  - path: "C:\\users\\YOURUSER\\desktop\\Release"
+  - procname: "xmr-stak.exe"
+  - logfile: "C:\\users\\YOURUSER\\desktop\\xmr-out.log"
+
+castxmr:
+  - path: "C:\\users\\YOURUSER\\desktop\\Release"
+  - procname: "cast_xmr-vega.exe"
+  - url: "localhost:7777"
