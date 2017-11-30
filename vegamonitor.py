@@ -122,9 +122,8 @@ def xmrstakcheck():
     print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
 
 def castcheck():
-    response = requests.get(url)
-    print(response)
-    json = json.loads(response.text)
+    response = requests.get(url).text
+    json = json.loads(response)
     print(json)
 
 while True:

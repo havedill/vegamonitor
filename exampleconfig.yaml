@@ -15,4 +15,4 @@ castxmr:
   path: "C:\\users\\YOURUSER\\desktop\\Release"
   procname: "cast_xmr-vega.exe"
   castargs: "-S pool.supportxmr.com:7777 -u WALLETADDRESS --opencl 1 -p rigGPU:YOUREMAIL -G 0,1 -R"
-  url: "localhost:7777"
+  url: "http://localhost:7777/"
