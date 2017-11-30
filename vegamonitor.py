@@ -123,16 +123,16 @@ def xmrstakcheck():
 
 def castcheck():
     response = requests.get(url).text
-    json = json.loads(response)
-    print(json)
+    loaded = json.loads(response)
+    print(loaded)
 
 while True:
     print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
     now = datetime.datetime.now()
     if "XMR" in app:
-        xmrstakcheck
+        xmrstakcheck()
     if "CAST" in app:
-        castcheck
+        castcheck()
     if restartreason:
         print(bcolors.BOLD + '======Reasons for Restarts======' + bcolors.ENDC)
         print(bcolors.WARNING + '{}\n'.format(restartreason) + bcolors.ENDC)
