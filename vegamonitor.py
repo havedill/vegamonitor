@@ -113,18 +113,28 @@ def xmrstakcheck():
         updating = mtime(logfile, timethreshold)
         if int(currenthash) < hashthreshold:
             print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
-            restarttime
+            restarttime()
             restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
         if updating == False:
             print(bcolors.FAIL + 'The logfile ({}) hasn\'t been updating for {} minutes. Restart sequence beginning'.format(logfile, timethreshold) + bcolors.ENDC)
-            restarttime
+            restarttime()
             restartreason += "\n{} - Logfile timeout".format(now)
     print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
 
 def castcheck():
-    response = requests.get(url).text
-    loaded = json.loads(response)
-    print(loaded)
+    response = requests.get(url)
+    if response.status_code > 300:
+        print(bcolors.FAIL + 'Local webserver returned {}. Is CastXMR down? Restarting just in case.'.format(response.status_code) + bcolors.ENDC)
+        restarttime()
+    else:
+        loaded = json.loads(response.text)
+        currenthash = loaded['total_hash_rate'] / 1024
+        if currenthash < hashthreshold:
+            print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
+            restarttime()
+            restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
+        print(bcolors.OKGREEN + 'Hashrate: {}\nWeb request returns: {}\n'.format(currenthash, response.status_code) + bcolors.ENDC)
+
 
 while True:
     print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
