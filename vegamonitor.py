@@ -126,7 +126,12 @@ def xmrstakcheck():
     print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
 
 def castcheck():
-    response = requests.get(url)
+    try:
+        response = requests.get(url)
+    except:
+        print(bcolors.FAIL + 'Local webserver threw exception. Is CastXMR down? Restarting just in case.' + bcolors.ENDC)
+        restarttime()
+        return
     if response.status_code > 300:
         print(bcolors.FAIL + 'Local webserver returned {}. Is CastXMR down? Restarting just in case.'.format(response.status_code) + bcolors.ENDC)
         restarttime()
