@@ -30,7 +30,9 @@ if 'CAST' in cfg['global']['app']:
     app = 'CAST'
     path = cfg['castxmr']['path']
     procname=  cfg['castxmr']['procname']
+    castargs = cfg['castxmr']['castargs']
     url = cfg['castxmr']['url']
+
 
 class bcolors:
     HEADER = '\033[95m'
