@@ -102,7 +102,7 @@ def restarttime():
     time.sleep(4)
     try:
         os.remove(logfile)
-    except OSError:
+    except (OSError, NameError) as e:
         pass
     resetdrivers(devconpath)
     overdrive(overdrivepath, overdriveargs)
