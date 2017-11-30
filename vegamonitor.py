@@ -130,10 +130,10 @@ def castcheck():
 while True:
     print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
     now = datetime.datetime.now()
-	if "XMR" in app:
-		xmrstakcheck
-	if "CAST" in app:
-		castcheck
+    if "XMR" in app:
+        xmrstakcheck
+    if "CAST" in app:
+        castcheck
     if restartreason:
         print(bcolors.BOLD + '======Reasons for Restarts======' + bcolors.ENDC)
         print(bcolors.WARNING + '{}\n'.format(restartreason) + bcolors.ENDC)
