@@ -1,7 +1,9 @@
 import datetime
 from file_read_backwards import FileReadBackwards
+import json
 import os
 import re
+import requests
 import subprocess
 import time
 import yaml
@@ -9,29 +11,26 @@ import yaml
 with open("config.yaml", 'r') as configfile:
     cfg = yaml.load(configfile)
 
-while True:
-    selection = input ("Welcome, please choose which configs to load.\n1) XMR-Stak\n2)CastXMR")
-    if selection in ['1', '2']:
-        break
-
-if selection == '1':
-    app = 'xmr-stak'
-elif selection == '2':
-    app = 'castxmr'
-
 #load the global variables
 devconpath = cfg['global'][0]['devconpath']
-overdrivepath = cfg['']
-overdrivepath = r"C:\users\YOURUSER\desktop\overdriventool.exe"
-# "Stable" would be replaced with your saved config's name in OverDriveNTool
-overdriveargs = '-p1Stable -p2Stable'
-xmrstakpath = r"C:\users\YOURUSER\desktop\Release"
-procname = "xmr-stak.exe"
-hashthreshold = 3700
-timethreshold = 10
-
+overdrivepath = cfg['global'][0]['overdrivepath']
+overdriveargs = cfg['global'][0]['overdriveargs']
+timethreshold = cfg['global'][0]['timethreshold']
+hashthreshold = cfg['global'][0]['hashthreshold']
 pattern = "Totals:\s+[0-9]+\.[0-9]+\s([0-9]+).*$"
 restartreason = ""
+
+if 'XMR' in cfg['global'][0]['app']:
+    app = 'XMR'
+    path = cfg['xmr-stak'][0]['path']
+    procname = cfg['xmr-stak'][0]['procname']
+    logfile = cfg['xmr-stak'][0]['logfile']
+
+if 'CAST' in cfg['global'][0]['app']:
+    app = 'XMR'
+    path = cfg['castxmr'][0]['path']
+    procname=  cfg['castxmr'][0]['procname']
+    url = cfg['castxmr'][0]['url']
 
 class bcolors:
     HEADER = '\033[95m'
@@ -94,43 +93,46 @@ def startmining(path, procname):
     print('Spinning up executable')
     subprocess.Popen('start cmd /C "{}\{}"'.format(path, procname), shell=True)
 
-while True:
-    print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
-    now = datetime.datetime.now()
+def restarttime():
+    stopprocess(procname)
+    time.sleep(4)
+    try:
+        os.remove(logfile)
+    except OSError:
+        pass
+    resetdrivers(devconpath)
+    overdrive(overdrivepath, overdriveargs)
+    os.chdir(path)
+    startmining(path, procname)
+    print('Waiting 90 seconds to get new average hash rates...')
+    time.sleep(90)
+
+def xmrstakcheck():
     if os.path.exists(logfile):
         currenthash = tail(logfile, pattern)
         updating = mtime(logfile, timethreshold)
         if int(currenthash) < hashthreshold:
             print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
-            stopprocess(procname)
-            time.sleep(4)
-            try:
-                os.remove(logfile)
-            except OSError:
-                pass
-            resetdrivers(devconpath)
-            overdrive(overdrivepath, overdriveargs)
-            os.chdir(path)
-            startmining(path, procname)
+            restarttime
             restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
-            print('Waiting 90 seconds to get new average hash rates...')
-            time.sleep(90)
         if updating == False:
             print(bcolors.FAIL + 'The logfile ({}) hasn\'t been updating for {} minutes. Restart sequence beginning'.format(logfile, timethreshold) + bcolors.ENDC)
-            stopprocess(procname)
-            time.sleep(4)
-            try:
-                os.remove(logfile)
-            except OSError:
-                pass
-            resetdrivers(devconpath)
-            overdrive(overdrivepath, overdriveargs)
-            os.chdir(path)
-            startmining(path, procname)
+            restarttime
             restartreason += "\n{} - Logfile timeout".format(now)
-            print('Waiting 90 seconds to get new average hash rates...')
-            time.sleep(90)
     print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
+
+def castcheck():
+    response = requests.get(url)
+    json = json.loads(response)
+    print(json)
+
+while True:
+    print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
+    now = datetime.datetime.now()
+    if app == "XMR":
+        xmrstakcheck
+    if app == "CAST":
+        castcheck
     if restartreason:
         print(bcolors.BOLD + '======Reasons for Restarts======' + bcolors.ENDC)
         print(bcolors.WARNING + '{}\n'.format(restartreason) + bcolors.ENDC)
