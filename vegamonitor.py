@@ -90,8 +90,12 @@ def overdrive(overdrivepath, overdriveargs):
     r = subprocess.Popen('{} {}'.format(overdrivepath, overdriveargs), shell=True)
 
 def startmining(path, procname):
-    print('Spinning up executable')
-    subprocess.Popen('start cmd /C "{}\{}"'.format(path, procname), shell=True)
+    if "XMR" in app:
+        print('Spinning up XMR-stak\n')
+        subprocess.Popen('start cmd /C "{}\{}"'.format(path, procname), shell=True)
+    if "CAST" in app:
+        print('Spinning up Cast-XMR\n')
+        subprocess.Popen('start cmd /C "{}\{} {}"'.format(path, procname, castargs), shell=True)
 
 def restarttime():
     stopprocess(procname)
