@@ -12,25 +12,25 @@ with open("config.yaml", 'r') as configfile:
     cfg = yaml.load(configfile)
 
 #load the global variables
-devconpath = cfg['global'][0]['devconpath']
-overdrivepath = cfg['global'][0]['overdrivepath']
-overdriveargs = cfg['global'][0]['overdriveargs']
-timethreshold = cfg['global'][0]['timethreshold']
-hashthreshold = cfg['global'][0]['hashthreshold']
+devconpath = cfg['global']['devconpath']
+overdrivepath = cfg['global']['overdrivepath']
+overdriveargs = cfg['global']['overdriveargs']
+timethreshold = cfg['global']['timethreshold']
+hashthreshold = cfg['global']['hashthreshold']
 pattern = "Totals:\s+[0-9]+\.[0-9]+\s([0-9]+).*$"
 restartreason = ""
 
-if 'XMR' in cfg['global'][0]['app']:
+if 'XMR' in cfg['global']['app']:
     app = 'XMR'
-    path = cfg['xmr-stak'][0]['path']
-    procname = cfg['xmr-stak'][0]['procname']
-    logfile = cfg['xmr-stak'][0]['logfile']
+    path = cfg['xmr-stak']['path']
+    procname = cfg['xmr-stak']['procname']
+    logfile = cfg['xmr-stak']['logfile']
 
-if 'CAST' in cfg['global'][0]['app']:
+if 'CAST' in cfg['global']['app']:
     app = 'XMR'
-    path = cfg['castxmr'][0]['path']
-    procname=  cfg['castxmr'][0]['procname']
-    url = cfg['castxmr'][0]['url']
+    path = cfg['castxmr']['path']
+    procname=  cfg['castxmr']['procname']
+    url = cfg['castxmr']['url']
 
 class bcolors:
     HEADER = '\033[95m'
