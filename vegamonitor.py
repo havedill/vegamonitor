@@ -27,7 +27,7 @@ if 'XMR' in cfg['global']['app']:
     logfile = cfg['xmr-stak']['logfile']
 
 if 'CAST' in cfg['global']['app']:
-    app = 'XMR'
+    app = 'CAST'
     path = cfg['castxmr']['path']
     procname=  cfg['castxmr']['procname']
     url = cfg['castxmr']['url']
@@ -123,16 +123,17 @@ def xmrstakcheck():
 
 def castcheck():
     response = requests.get(url)
-    json = json.loads(response)
+    print(response)
+    json = json.loads(response.text)
     print(json)
 
 while True:
     print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
     now = datetime.datetime.now()
-    if app == "XMR":
-        xmrstakcheck
-    if app == "CAST":
-        castcheck
+	if "XMR" in app:
+		xmrstakcheck
+	if "CAST" in app:
+		castcheck
     if restartreason:
         print(bcolors.BOLD + '======Reasons for Restarts======' + bcolors.ENDC)
         print(bcolors.WARNING + '{}\n'.format(restartreason) + bcolors.ENDC)
