@@ -4,18 +4,8 @@ Using python 3.6
 
 Install python 3.6
 Install the python module requirments (pip install -r requirements.txt)
-Make a copy of exampleconfig.yaml, and name it config.yaml
-	Update this with your settings. Put which miner you use, file paths, etc
-	NOTE: CastXMR arguments will REQUIRE the -R flag (to log to localhost:7777)
-
-
-XMR-Stak Config Changes:
-- Set output to file to a location of your choosing
-- Set verbose mode to 4
-- Set the h_print_time to a lower value, I use 10 seconds
-
-Cast Required Arugments:
-- Requires -R flag to allow access to the json data
+CONFIG LOCATION
+- Make a copy of exampleconfig.yaml, and name it config.yaml.	Update this with your settings. Put which miner you use, file paths, etc
 
 XMRSTAK
 =======
@@ -26,6 +16,11 @@ XMRSTAK
 - Sets OverClockNTools configurations based on your supplied arguments
 - Starts a new session of XMR-Stak
 
+XMR-Stak Config Changes:
+- Set output to file to a location of your choosing
+- Set verbose mode to 4
+- Set the h_print_time to a lower value, I use 10 seconds
+
 CASTXMR
 =======
 - Web request castxmr for hashrates (TODO: Write logic for 60s Hashrate)
@@ -35,7 +30,8 @@ CASTXMR
 - Sets OverClockNTools configurations based on your supplied arguments
 - Starts a new session of Cast with your supplied arguments
 
-
+Cast Required Arugments:
+- Requires -R flag to allow access to the json data
 
 No need to donate, but if you'd like to:
 42uEk7j5ieJAyRhCcUjXkrhsSLe7J8WwXN86ubZfA5ne7RUrEJL2XhoYFtY71UgJiVG1CEZXwKi545cMB42AAdxV3MVT74Z
