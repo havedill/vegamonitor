@@ -144,7 +144,7 @@ def castcheck():
     else:
         loaded = json.loads(response.text)
         #interesting conversion. Perhaps this is why cast seems to have higher values than other miners?
-        currenthash = loaded['total_hash_rate'] / 1000
+        currenthash = loaded['total_hash_rate_avg'] / 1000
         if currenthash < hashthreshold:
             print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
             restarttime()
