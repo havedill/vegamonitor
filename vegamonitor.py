@@ -147,9 +147,9 @@ def castcheck():
         currenthash = loaded['total_hash_rate'] / 1000
         if currenthash < hashthreshold:
             hash = 0
-            for count in range(0, 6):
+            for count in range(1, 7):
                 time.sleep(10)
-                print(bcolors.WARNING + 'Hashrate of {} is below threshold. {} Checks to confirm this is persistent'.format(currenthash, count) + bcolors.ENDC)
+                print(bcolors.WARNING + 'Hashrate of {} is below threshold. Checking {}/6 to confirm this is persistent'.format(currenthash, count) + bcolors.ENDC)
                 #since i do 10 second intervals,
                 try:
                     response = requests.get(url)
