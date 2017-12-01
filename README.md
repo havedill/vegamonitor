@@ -25,7 +25,7 @@ XMR-Stak Config Changes:
 
 CASTXMR
 =======
-- Web request castxmr for hashrates (TODO: Write logic for 60s Hashrate)
+- Web request castxmr for hashrates
 - Confirm web requests return code 200. If not, restart things - we assume cast is locked up or countdown
 - Kills old process if below hash thresholds, or return has troubles
 - Resets Drivers (HBCC) by resetting them in device manager
