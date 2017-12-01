@@ -1,26 +1,38 @@
 import datetime
-import time
-import re
-import os
-import subprocess
 from file_read_backwards import FileReadBackwards
+import json
+import os
+import re
+import requests
+import subprocess
+import time
+import yaml
 
-#################CONFIG SETTINGS#################
-#Todo: split this into a seperate file?
-#
-#Notes: By default i have all these executables set to always run as administrator!
-logfile = r"C:\users\YOURUSER\desktop\xmr-out.log"
-devconpath = r"C:\users\YOURUSER\desktop\devcon.exe"
-overdrivepath = r"C:\users\YOURUSER\desktop\overdriventool.exe"
-# "Stable" would be replaced with your saved config's name in OverDriveNTool
-overdriveargs = '-p1Stable -p2Stable'
-xmrstakpath = r"C:\users\YOURUSER\desktop\Release"
-procname = "xmr-stak.exe"
-hashthreshold = 3700
-timethreshold = 10
+with open("config.yaml", 'r') as configfile:
+    cfg = yaml.load(configfile)
 
+#load the global variables
+devconpath = cfg['global']['devconpath']
+overdrivepath = cfg['global']['overdrivepath']
+overdriveargs = cfg['global']['overdriveargs']
+timethreshold = cfg['global']['timethreshold']
+hashthreshold = cfg['global']['hashthreshold']
 pattern = "Totals:\s+[0-9]+\.[0-9]+\s([0-9]+).*$"
 restartreason = ""
+
+if 'XMR' in cfg['global']['app']:
+    app = 'XMR'
+    path = cfg['xmr-stak']['path']
+    procname = cfg['xmr-stak']['procname']
+    logfile = cfg['xmr-stak']['logfile']
+
+if 'CAST' in cfg['global']['app']:
+    app = 'CAST'
+    path = cfg['castxmr']['path']
+    procname=  cfg['castxmr']['procname']
+    castargs = cfg['castxmr']['castargs']
+    url = cfg['castxmr']['url']
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -79,47 +91,87 @@ def overdrive(overdrivepath, overdriveargs):
     print('Applying Overdrive configs')
     r = subprocess.Popen('{} {}'.format(overdrivepath, overdriveargs), shell=True)
 
-def startmining(xmrstakpath, procname):
-    print('Spinning up executable')
-    subprocess.Popen('start cmd /C "{}\{}"'.format(xmrstakpath, procname), shell=True)
+def startmining(path, procname):
+    if "XMR" in app:
+        print('Spinning up XMR-stak\n')
+        subprocess.Popen('start cmd /C "{}\{}"'.format(path, procname), shell=True)
+    if "CAST" in app:
+        print('Spinning up Cast-XMR\n')
+        subprocess.Popen('start cmd /C "{}\{} {}"'.format(path, procname, castargs), shell=True)
 
-while True:
-    print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
-    now = datetime.datetime.now()
+def restarttime():
+    stopprocess(procname)
+    time.sleep(4)
+    try:
+        os.remove(logfile)
+    except (OSError, NameError) as e:
+        pass
+    resetdrivers(devconpath)
+    overdrive(overdrivepath, overdriveargs)
+    os.chdir(path)
+    startmining(path, procname)
+    print('Waiting 90 seconds to get new average hash rates...')
+    time.sleep(90)
+
+def xmrstakcheck():
+    global restartreason
     if os.path.exists(logfile):
         currenthash = tail(logfile, pattern)
         updating = mtime(logfile, timethreshold)
         if int(currenthash) < hashthreshold:
             print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
-            stopprocess(procname)
-            time.sleep(4)
-            try:
-                os.remove(logfile)
-            except OSError:
-                pass
-            resetdrivers(devconpath)
-            overdrive(overdrivepath, overdriveargs)
-            os.chdir(xmrstakpath)
-            startmining(xmrstakpath, procname)
+            restarttime()
             restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
-            print('Waiting 90 seconds to get new average hash rates...')
-            time.sleep(90)
         if updating == False:
             print(bcolors.FAIL + 'The logfile ({}) hasn\'t been updating for {} minutes. Restart sequence beginning'.format(logfile, timethreshold) + bcolors.ENDC)
-            stopprocess(procname)
-            time.sleep(4)
-            try:
-                os.remove(logfile)
-            except OSError:
-                pass
-            resetdrivers(devconpath)
-            overdrive(overdrivepath, overdriveargs)
-            os.chdir(xmrstakpath)
-            startmining(xmrstakpath, procname)
+            restarttime()
             restartreason += "\n{} - Logfile timeout".format(now)
-            print('Waiting 90 seconds to get new average hash rates...')
-            time.sleep(90)
     print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
+
+def castcheck():
+    global restartreason
+    try:
+        response = requests.get(url)
+    except:
+        print(bcolors.FAIL + 'Local webserver threw exception. Is CastXMR down? Restarting just in case.' + bcolors.ENDC)
+        restarttime()
+        restartreason += "{} - Webserver caught exception".format(now)
+        return
+    if response.status_code > 300:
+        print(bcolors.FAIL + 'Local webserver returned {}. Is CastXMR down? Restarting just in case.'.format(response.status_code) + bcolors.ENDC)
+        restarttime()
+        restartreason += "{} - Web return {}".format(now, response.status_code)
+    else:
+        loaded = json.loads(response.text)
+        #interesting conversion. Perhaps this is why cast seems to have higher values than other miners?
+        currenthash = loaded['total_hash_rate'] / 1000
+        if currenthash < hashthreshold:
+            hash = 0
+            for count in range(1, 7):
+                time.sleep(10)
+                print(bcolors.WARNING + 'Hashrate of {} is below threshold. Checking {}/6 to confirm this is persistent'.format(currenthash, count) + bcolors.ENDC)
+                #since i do 10 second intervals,
+                try:
+                    response = requests.get(url)
+                    loaded = json.loads(response.text)
+                except:
+                    #assume exceptions are caused by issues anyways. Let it continue and restart
+                    pass
+                hash += loaded['total_hash_rate'] / 1000
+            #take the 60s average and fire a restart if it's below
+            if (hash/6) < hashthreshold:
+                print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
+                restarttime()
+                restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
+        print(bcolors.OKGREEN + 'Hashrate: {}\nWeb request returns: {}\n'.format(currenthash, response.status_code) + bcolors.ENDC)
+
+while True:
+    print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
+    now = datetime.datetime.now()
+    if "XMR" in app:
+        xmrstakcheck()
+    if "CAST" in app:
+        castcheck()
     if restartreason:
         print(bcolors.BOLD + '======Reasons for Restarts======' + bcolors.ENDC)
         print(bcolors.WARNING + '{}\n'.format(restartreason) + bcolors.ENDC)

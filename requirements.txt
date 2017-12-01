@@ -1,1 +1,3 @@
+requests==2.18.4
 file_read_backwards==1.2.2
+PyYAML==3.12
