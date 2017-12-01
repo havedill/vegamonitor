@@ -146,7 +146,7 @@ def castcheck():
         #interesting conversion. Perhaps this is why cast seems to have higher values than other miners?
         currenthash = loaded['total_hash_rate'] / 1000
         if currenthash < hashthreshold:
-            print(bcolors.WARNING + 'Hashrate of {}H/s is below threshold. Grabbing a 60s average.'.format(currenthash, count) + bcolors.ENDC)
+            print(bcolors.WARNING + 'Hashrate of {}H/s is below threshold. Grabbing a 60s average.'.format(currenthash) + bcolors.ENDC)
             hash = 0
             for count in range(1, 7):
                 time.sleep(10)
