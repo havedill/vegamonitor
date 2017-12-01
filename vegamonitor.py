@@ -144,13 +144,26 @@ def castcheck():
     else:
         loaded = json.loads(response.text)
         #interesting conversion. Perhaps this is why cast seems to have higher values than other miners?
-        currenthash = loaded['total_hash_rate_avg'] / 1000
+        currenthash = loaded['total_hash_rate'] / 1000
         if currenthash < hashthreshold:
-            print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
-            restarttime()
-            restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
+            hash = 0
+            for count in range(0, 6):
+                time.sleep(10)
+                print(bcolors.WARNING + 'Hashrate of {} is below threshold. {} Checks to confirm this is persistent'.format(currenthash, count) + bcolors.ENDC)
+                #since i do 10 second intervals,
+                try:
+                    response = requests.get(url)
+                    loaded = json.loads(response.text)
+                except:
+                    #assume exceptions are caused by issues anyways. Let it continue and restart
+                    pass
+                hash += loaded['total_hash_rate'] / 1000
+            #take the 60s average and fire a restart if it's below
+            if (hash/6) < hashthreshold:
+                print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
+                restarttime()
+                restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
         print(bcolors.OKGREEN + 'Hashrate: {}\nWeb request returns: {}\n'.format(currenthash, response.status_code) + bcolors.ENDC)
-
 
 while True:
     print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
