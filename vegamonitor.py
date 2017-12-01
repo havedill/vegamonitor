@@ -133,10 +133,12 @@ def castcheck():
     except:
         print(bcolors.FAIL + 'Local webserver threw exception. Is CastXMR down? Restarting just in case.' + bcolors.ENDC)
         restarttime()
+        restartreason += "{} - Webserver caught exception".format(now)
         return
     if response.status_code > 300:
         print(bcolors.FAIL + 'Local webserver returned {}. Is CastXMR down? Restarting just in case.'.format(response.status_code) + bcolors.ENDC)
         restarttime()
+        restartreason += "{} - Web return {}".format(now, response.status_code)
     else:
         loaded = json.loads(response.text)
         currenthash = loaded['total_hash_rate'] / 1024
