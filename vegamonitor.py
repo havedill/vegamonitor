@@ -114,6 +114,7 @@ def restarttime():
     time.sleep(90)
 
 def xmrstakcheck():
+    global restartreason
     if os.path.exists(logfile):
         currenthash = tail(logfile, pattern)
         updating = mtime(logfile, timethreshold)
@@ -128,6 +129,7 @@ def xmrstakcheck():
     print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
 
 def castcheck():
+    global restartreason
     try:
         response = requests.get(url)
     except:
