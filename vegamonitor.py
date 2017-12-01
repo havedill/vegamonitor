@@ -126,7 +126,7 @@ def xmrstakcheck():
             print(bcolors.FAIL + 'The logfile ({}) hasn\'t been updating for {} minutes. Restart sequence beginning'.format(logfile, timethreshold) + bcolors.ENDC)
             restarttime()
             restartreason += "\n{} - Logfile timeout".format(now)
-    print(bcolors.OKGREEN + 'Hashrate: {}\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
+    print(bcolors.OKGREEN + 'Hashrate: {}H/s\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
 
 def castcheck():
     global restartreason
@@ -146,10 +146,10 @@ def castcheck():
         #interesting conversion. Perhaps this is why cast seems to have higher values than other miners?
         currenthash = loaded['total_hash_rate'] / 1000
         if currenthash < hashthreshold:
+            print(bcolors.WARNING + 'Hashrate of {}H/s is below threshold. Grabbing a 60s average.'.format(currenthash, count) + bcolors.ENDC)
             hash = 0
             for count in range(1, 7):
                 time.sleep(10)
-                print(bcolors.WARNING + 'Hashrate of {} is below threshold. Checking {}/6 to confirm this is persistent'.format(currenthash, count) + bcolors.ENDC)
                 #since i do 10 second intervals,
                 try:
                     response = requests.get(url)
@@ -157,13 +157,15 @@ def castcheck():
                 except:
                     #assume exceptions are caused by issues anyways. Let it continue and restart
                     pass
-                hash += loaded['total_hash_rate'] / 1000
+                h = loaded['total_hash_rate'] / 1000
+                hash += h
+                print(bcolors.WARNING + 'Checking {}/6 hashrate: {}H/s'.format(count, h) + bcolors.ENDC)
             #take the 60s average and fire a restart if it's below
             if (hash/6) < hashthreshold:
-                print(bcolors.FAIL + 'Hashrate of {} is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
+                print(bcolors.FAIL + 'Hashrate of {}H/s is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
                 restarttime()
                 restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
-        print(bcolors.OKGREEN + 'Hashrate: {}\nWeb request returns: {}\n'.format(currenthash, response.status_code) + bcolors.ENDC)
+        print(bcolors.OKGREEN + 'Hashrate: {}H/s\nWeb request returns: {}\n'.format(currenthash, response.status_code) + bcolors.ENDC)
 
 while True:
     print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
