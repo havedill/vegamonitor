@@ -45,6 +45,8 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 def tail(filename, pattern, maxlines=60):
+    global restartreason
+    waitcount = 0
     while True:
         with FileReadBackwards(filename, encoding="utf-8") as frb:
             lines=0
@@ -57,7 +59,12 @@ def tail(filename, pattern, maxlines=60):
                     hashrate = re.search(pattern, l)
                     if hashrate:
                         return hashrate.group(1)
-        print(bcolors.WARNING + "No 60s hash found yet. Waiting for that to appear.." + bcolors.ENDC)
+        print(bcolors.WARNING + "No 60s hash found yet. Waiting for that to appear.. ({})".format(waitcount) + bcolors.ENDC)
+        waitcount += 1
+        if waitcount > 31:
+            print(bcolors.FAIL + "Waited too long for an average hash! Kill it all." + bcolors.ENDC)
+            restartreason += "{} - Timeout waiting for 60s Hash".format(now)
+            restarttime()
         time.sleep(10)
 
 #Gets modified time of the logfile. Confirms it is still updating.
@@ -164,7 +171,7 @@ def castcheck():
             if (hash/6) < hashthreshold:
                 print(bcolors.FAIL + 'Hashrate of {}H/s is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
                 restarttime()
-                restartreason += "\ns{} - Low Hashrate ({} H/s)".format(now, currenthash)
+                restartreason += "\n{} - Low Hashrate ({} H/s)".format(now, currenthash)
         print(bcolors.OKGREEN + 'Hashrate: {}H/s\nWeb request returns: {}\n'.format(currenthash, response.status_code) + bcolors.ENDC)
 
 while True:
