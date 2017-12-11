@@ -65,6 +65,7 @@ def tail(filename, pattern, maxlines=60):
             print(bcolors.FAIL + "Waited too long for an average hash! Kill it all." + bcolors.ENDC)
             restartreason += "{} - Timeout waiting for 60s Hash".format(now)
             restarttime()
+            waitcount = 0
         time.sleep(10)
 
 #Gets modified time of the logfile. Confirms it is still updating.
@@ -117,8 +118,8 @@ def restarttime():
     overdrive(overdrivepath, overdriveargs)
     os.chdir(path)
     startmining(path, procname)
-    print('Waiting 90 seconds to get new average hash rates...')
-    time.sleep(90)
+    print('Waiting 120 seconds to get new average hash rates...')
+    time.sleep(120)
 
 def xmrstakcheck():
     global restartreason
