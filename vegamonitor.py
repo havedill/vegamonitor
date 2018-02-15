@@ -153,26 +153,44 @@ def castcheck():
         loaded = json.loads(response.text)
         #interesting conversion. Perhaps this is why cast seems to have higher values than other miners?
         currenthash = loaded['total_hash_rate'] / 1000
-        if currenthash < hashthreshold:
-            print(bcolors.WARNING + 'Hashrate of {}H/s is below threshold. Grabbing a 60s average.'.format(currenthash) + bcolors.ENDC)
+        #tracker for 'online' minutes
+        online = loaded['pool']['online']
+
+        if currenthash < hashthreshold or online == 0:
+            print(bcolors.WARNING + 'Hashrate of {}H/s is below threshold, or miner is offline. Grabbing a 60s average.'.format(currenthash) + bcolors.ENDC)
             hash = 0
+            on = 0
             for count in range(1, 7):
                 time.sleep(10)
                 #since i do 10 second intervals,
+
                 try:
                     response = requests.get(url)
                     loaded = json.loads(response.text)
+
                 except:
                     #assume exceptions are caused by issues anyways. Let it continue and restart
                     pass
+
                 h = loaded['total_hash_rate'] / 1000
+                o = loaded['pool']['online']
+
                 hash += h
+                on += o
                 print(bcolors.WARNING + 'Checking {}/6 hashrate: {}H/s'.format(count, h) + bcolors.ENDC)
+                print(bcolors.WARNING + 'Checking {}/6 online: {} seconds'.format(count, o) + bcolors.ENDC)
+
             #take the 60s average and fire a restart if it's below
             if (hash/6) < hashthreshold:
                 print(bcolors.FAIL + 'Hashrate of {}H/s is below set threshold of {}! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
                 restarttime()
                 restartreason += "\n{} - Low Hashrate ({} H/s)".format(now, currenthash)
+
+            if (on) == 0:
+                print(bcolors.FAIL + 'Online time has been 0 for the past minute! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
+                restarttime()
+                restartreason += "\n{} - Online time of zero -- likely CastXMR hang".format(now)
+                
         print(bcolors.OKGREEN + 'Hashrate: {}H/s\nWeb request returns: {}\n'.format(currenthash, response.status_code) + bcolors.ENDC)
 
 while True:
