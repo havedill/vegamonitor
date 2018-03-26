@@ -16,7 +16,8 @@ xmr-stak:
 castxmr:
   path: "C:\\users\\YOURUSER\\desktop\\Release"
   procname: "cast_xmr-vega.exe"
-  castargs: "-S pool.supportxmr.com:7777 -u WALLETADDRESS --opencl 1 -p rigGPU:YOUREMAIL -G 0,1 -R"
+  scriptname: "some_start_script.bat" #script containing the start command for cast, looks like below
+  #castargs: "-S pool.supportxmr.com:7777 -u WALLETADDRESS --opencl 1 -p rigGPU:YOUREMAIL -G 0,1 -R"
   url: "http://localhost:7777/"
 
 actions:
