@@ -5,6 +5,8 @@ Using python 3.6
 Install python 3.6
 Install the python module requirments (pip install -r requirements.txt)
 
+For debugging & development, I have created a lite server which simulates the cast server on localhost:7777. You need python-flask in order to use this.
+
 CONFIG LOCATION
 ===============
 - Make a copy of exampleconfig.yaml, and name it config.yaml.	Update this with your settings. Put which miner you use, file paths, etc
