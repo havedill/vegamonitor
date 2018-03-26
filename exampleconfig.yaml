@@ -1,7 +1,9 @@
 global:
+  context: 'live' #test or live
   app: 'XMR' #XMR or CAST
   hashthreshold: 3700
   timethreshold: 10
+  logsamples: 10
   devconpath: "C:\\users\\YOURUSER\\desktop\\devcon.exe"
   overdrivepath: "C:\\users\\YOURUSER\\desktop\\overdriventool.exe"
   overdriveargs: '-p1Stable -p2Stable'
@@ -16,3 +18,7 @@ castxmr:
   procname: "cast_xmr-vega.exe"
   castargs: "-S pool.supportxmr.com:7777 -u WALLETADDRESS --opencl 1 -p rigGPU:YOUREMAIL -G 0,1 -R"
   url: "http://localhost:7777/"
+
+actions:
+  applyoverdrive: True
+  restartdivers: False
