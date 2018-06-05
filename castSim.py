@@ -4,7 +4,7 @@ import json
 import time
 import random
 
-mode = 'normal' #normal, lowhash, online0, samehash 
+mode = 'normal' #normal, lowhash, online0, samehash, rejected
 hashThreshold = 3650*1000
 hashrate = hashThreshold + 200000
 
@@ -29,7 +29,7 @@ data = json.loads('''{
     "shares": {
         "num_accepted": 18,
         "num_rejected": 0,
-        "num_invalid": 1,
+        "num_invalid": 0,
         "num_network_fail": 0,
         "num_outdated": 0,
         "search_time_avg": 32.56
@@ -88,6 +88,15 @@ def castSim():
         data['pool']['online'] = int(online)
         data['total_hash_rate'] = hashrate
         data['total_hash_rate_avg'] = hashrate
+        pass
+    
+    elif mode == 'rejected':
+        #simulate rejected shares
+        num_invalid = data['shares']['num_invalid'] + 1
+        online = time.time() - start
+        data['pool']['online'] = int(online)
+        data['total_hash_rate'] = hashrate + random.randint(-50000, 50000)
+        data['total_hash_rate_avg'] = hashrate + random.randint(-5000, 5000)
         pass
 
     return json.dumps(data)
