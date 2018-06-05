@@ -18,6 +18,7 @@ overdriveargs = cfg['global']['overdriveargs']
 timethreshold = cfg['global']['timethreshold']
 hashthreshold = cfg['global']['hashthreshold']
 logsamples = cfg['global']['logsamples']
+rejectedshares = cfg['global']['rejectedshares']
 pattern = "Totals:\s+[0-9]+\.[0-9]+\s([0-9]+).*$"
 
 applyoverdrive = cfg['actions']['applyoverdrive']
@@ -218,7 +219,7 @@ def castXMRCheck():
     except:
         print(bcolors.FAIL + 'Local webserver threw exception. Is CastXMR down? Restarting just in case.' + bcolors.ENDC)
         restartMiner()
-        restartreason += "{} - Webserver caught exception\n".format(now)
+        restartreason += "\n{} - Webserver caught exception\n".format(now)
         return
 
     if response.status_code > 300:
@@ -232,6 +233,10 @@ def castXMRCheck():
 
         #tracker for 'online' minutes
         online = loaded['pool']['online']
+
+        #tracker for rejected shares
+        rejected = loaded['shares']['num_rejected']
+        rejected += loaded['shares']['num_invalid']
 
         #use new SMA method
         log(metrics['hashrate'], currenthash)
@@ -261,6 +266,11 @@ def castXMRCheck():
             elif checkEqual(metrics['onlinetime']):
                 print(bcolors.FAIL + 'Online time has been 0 for the past minute! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
                 restartreason += "\n{} - Online time of zero -- likely CastXMR hang".format(now)
+                restartMiner()
+
+            elif rejected > rejectedshares:
+                print(bcolors.FAIL + 'Rejected shares threshold reached! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
+                restartreason += "\n{} - Too many rejected shares".format(now)
                 restartMiner()
 
         print(bcolors.OKGREEN + 'Hashrate: {}H/s\nWeb request returns: {}\n'.format(currenthash, response.status_code) + bcolors.ENDC)
