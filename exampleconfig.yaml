@@ -4,6 +4,7 @@ global:
   hashthreshold: 3700
   timethreshold: 10
   logsamples: 10
+  rejectedshares: 20
   devconpath: "C:\\users\\YOURUSER\\desktop\\devcon.exe"
   overdrivepath: "C:\\users\\YOURUSER\\desktop\\overdriventool.exe"
   overdriveargs: '-p1Stable -p2Stable'
