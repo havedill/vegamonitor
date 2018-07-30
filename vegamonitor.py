@@ -7,6 +7,7 @@ import requests
 import subprocess
 import time
 import yaml
+import sys
 
 with open("config.yaml", 'r') as configfile:
     cfg = yaml.load(configfile)
@@ -27,17 +28,17 @@ restartdivers = cfg['actions']['restartdivers']
 restartreason = ""
 devMode = False
 
-metrics = {'hashrate': [], 'onlinetime': []}
+metrics = {'hashrate': [], 'onlinetime': [], 'gpuhashes': []}
 
 if 'test' in cfg['global']['context']:
     print "!!! RUNNING IN DEVELOPMENT MODE !!!"
     devMode = True
 
 if restartdivers:
-    print "Configured to reset drivers on restart."
+    print "Configured to reset drivers on restart.\n"
 
 if applyoverdrive:
-    print "Configured to apply overdrive settings on restart."
+    print "Configured to apply overdrive settings on restart.\n"
 
 if 'XMR' in cfg['global']['app']:
     app = 'XMR'
@@ -158,7 +159,7 @@ def startMining(path, procname):
 def restartMiner():
     #clear the metrics
     global metrics
-    metrics = {'hashrate': [], 'onlinetime': []}
+    metrics = {'hashrate': [], 'onlinetime': [], 'gpuhashes': []}
 
     if devMode:
         pass
@@ -194,7 +195,15 @@ def XMRStakCheck():
 
         if not warmupReached(metrics['hashrate']):
             #moving average is not accurate yet, so return.
-            print('SMA is not ready yet. Waiting...' + bcolors.ENDC)
+            CURSOR_UP_ONE = '\x1b[1A'
+            ERASE_LINE = '\x1b[2K'
+            sys.stdout.write(CURSOR_UP_ONE)
+            sys.stdout.write(ERASE_LINE)
+            msg = "["+str(len(metrics['hashrate']))+"/"+str(logsamples)+"] "
+            msg += ('SMA is not ready yet. Waiting')
+            for x in range(len(metrics['hashrate'])):
+                msg+=('.')
+            print msg
             return
 
         else:
@@ -210,9 +219,14 @@ def XMRStakCheck():
 
     print(bcolors.OKGREEN + 'Hashrate: {}H/s\nLog updating: {}\n'.format(currenthash, updating) + bcolors.ENDC)
 
+def crashedGPU():
+    for x in range(len(metrics['gpuhashes'])):
+        if checkEqual(metrics['gpuhashes'][x]):
+            return x
+    return None
+
 def castXMRCheck():
     global restartreason
-    printed = False
 
     try:
         response = requests.get(url)
@@ -231,7 +245,10 @@ def castXMRCheck():
     else:
         loaded = json.loads(response.text)
         currenthash = loaded['total_hash_rate'] / 1000
-        numGPU = loaded["devices"]
+        numGPU = len(loaded["devices"])
+
+        while len(metrics['gpuhashes']) < numGPU:
+            metrics['gpuhashes'].append([])
 
         #tracker for 'online' minutes
         online = loaded['pool']['online']
@@ -243,19 +260,26 @@ def castXMRCheck():
         #use new SMA method
         log(metrics['hashrate'], currenthash)
         log(metrics['onlinetime'], online)
+        for x in range(numGPU):
+            log(metrics['gpuhashes'][x], loaded["devices"][x]['hash_rate'])
 
         if devMode:
             print 'hashrate moving average:', movingAverage(metrics['hashrate'])
             print 'hashrate array:', metrics['hashrate']
             print 'online array:', metrics['onlinetime']
+            print 'gpuhashes array:', metrics['gpuhashes']
 
         if not warmupReached(metrics['hashrate']):
             #moving average is not accurate yet, so return.
-            if not printed:
-                print('SMA is not ready yet. Waiting.')
-                printed = True
-            else:
-                print('.')
+            CURSOR_UP_ONE = '\x1b[1A'
+            ERASE_LINE = '\x1b[2K'
+            sys.stdout.write(CURSOR_UP_ONE)
+            sys.stdout.write(ERASE_LINE)
+            msg = "["+str(len(metrics['hashrate']))+"/"+str(logsamples)+"] "
+            msg += ('SMA is not ready yet. Waiting')
+            for x in range(len(metrics['hashrate'])):
+                msg+=('.')
+            print msg
             return
 
         else:
@@ -267,6 +291,11 @@ def castXMRCheck():
             elif checkEqual(metrics['hashrate']):
                 print(bcolors.FAIL + 'Hashrate is the same across all samples! Resetting all miner settings'.format(currenthash, hashthreshold) + bcolors.ENDC)
                 restartreason += "\n{} - Identical hashrate -- likely CastXMR hang".format(now)
+                restartMiner()
+
+            elif crashedGPU() is not None:
+                print(bcolors.FAIL + 'GPU{} has crashed! Resetting all miner settings'.format(crashedGPU()) + bcolors.ENDC)
+                restartreason += "\n{} - Identical hashrate for GPU -- GPU{} crash".format(now, crashedGPU())
                 restartMiner()
 
             elif checkEqual(metrics['onlinetime']):
@@ -283,7 +312,9 @@ def castXMRCheck():
 
 if __name__ == '__main__':
     while True:
-        print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
+        if warmupReached(metrics['hashrate']):
+            print(bcolors.BOLD + '\n\n==============\n' + bcolors.ENDC)
+
         now = datetime.datetime.now()
 
         if "XMR" in app:

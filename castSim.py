@@ -5,7 +5,7 @@ import time
 import random
 from copy import deepcopy
 
-mode = 'crash' #normal, lowhash, online0, samehash, rejected, crash
+mode = 'normal' #normal, lowhash, online0, samehash, rejected, crash
 hashThreshold = 5850*1000
 hashrate = hashThreshold + 200000
 numGPU = 3
@@ -47,8 +47,6 @@ start = time.time()
 app = Flask(__name__)
 
 def startGPUs():
-    print "starting GPUs"
-
     for x in range(numGPU):
         #build gpu data
         GPU = {"device": "GPU" + str(x),
@@ -74,7 +72,7 @@ def castSim():
     else:
         updateGPUs()
 
-    if mode == 'normal':
+    if mode == 'normal' or mode == 'crash':
         #normal operation: online increases, hashrate is above minimum
         online = time.time() - start
         data['pool']['online'] = int(online)
