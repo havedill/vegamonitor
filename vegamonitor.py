@@ -253,6 +253,7 @@ def castXMRCheck():
             #moving average is not accurate yet, so return.
             if not printed:
                 print('SMA is not ready yet. Waiting.')
+                printed = True
             else:
                 print('.')
             return
