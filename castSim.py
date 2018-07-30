@@ -3,10 +3,12 @@ from flask import Flask
 import json
 import time
 import random
+from copy import deepcopy
 
-mode = 'normal' #normal, lowhash, online0, samehash, rejected
-hashThreshold = 3650*1000
+mode = 'crash' #normal, lowhash, online0, samehash, rejected, crash
+hashThreshold = 5850*1000
 hashrate = hashThreshold + 200000
+numGPU = 3
 
 data = json.loads('''{
     "total_hash_rate": 3718861,
@@ -35,32 +37,43 @@ data = json.loads('''{
         "search_time_avg": 32.56
     },
     "devices": [
-    {
-        "device": "GPU0",
-        "device_id": 0,
-        "hash_rate": 1905402,
-        "hash_rate_avg": 2044244,
-        "gpu_temperature": 59,
-        "gpu_fan_rpm": 3881
-    },
-    {
-        "device": "GPU1",
-        "device_id": 1,
-        "hash_rate": 1813459,
-        "hash_rate_avg": 1806595,
-        "gpu_temperature": 60,
-        "gpu_fan_rpm": 3412
-    }
     ]
 }''')
+
 
 start = time.time()
 
 # Setup Flask app and app.config
 app = Flask(__name__)
 
+def startGPUs():
+    print "starting GPUs"
+
+    for x in range(numGPU):
+        #build gpu data
+        GPU = {"device": "GPU" + str(x),
+        "device_id": str(x),
+        "hash_rate": 1905402,
+        "hash_rate_avg": 2044244,
+        "gpu_temperature": 59,
+        "gpu_fan_rpm": 3881}
+
+        data['devices'].append(GPU)
+
+def updateGPUs(crashedGPU = None):
+    for x in range(numGPU):
+        if x != crashedGPU:
+            GPU = data['devices'][x]
+            GPU['hash_rate'] = (hashrate + random.randint(-50000, 50000))/numGPU
+            GPU['hash_rate_avg'] = (hashrate + random.randint(-5000, 5000))/numGPU
+
 @app.route('/')
 def castSim():
+    if mode == 'crash':
+        updateGPUs(crashedGPU=numGPU-1)
+    else:
+        updateGPUs()
+
     if mode == 'normal':
         #normal operation: online increases, hashrate is above minimum
         online = time.time() - start
@@ -80,7 +93,6 @@ def castSim():
         data['pool']['online'] = 0
         data['total_hash_rate'] = hashrate + random.randint(-50000, 50000)
         data['total_hash_rate_avg'] = hashrate + random.randint(-5000, 5000)
-        pass
 
     elif mode == 'samehash':
         #simulate identical hashrates
@@ -88,7 +100,6 @@ def castSim():
         data['pool']['online'] = int(online)
         data['total_hash_rate'] = hashrate
         data['total_hash_rate_avg'] = hashrate
-        pass
     
     elif mode == 'rejected':
         #simulate rejected shares
@@ -97,8 +108,8 @@ def castSim():
         data['pool']['online'] = int(online)
         data['total_hash_rate'] = hashrate + random.randint(-50000, 50000)
         data['total_hash_rate_avg'] = hashrate + random.randint(-5000, 5000)
-        pass
 
     return json.dumps(data)
 
+startGPUs()
 app.run(host='0.0.0.0', port=7777, debug=True)
