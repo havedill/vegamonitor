@@ -212,6 +212,7 @@ def XMRStakCheck():
 
 def castXMRCheck():
     global restartreason
+    printed = False
 
     try:
         response = requests.get(url)
@@ -230,6 +231,7 @@ def castXMRCheck():
     else:
         loaded = json.loads(response.text)
         currenthash = loaded['total_hash_rate'] / 1000
+        numGPU = loaded["devices"]
 
         #tracker for 'online' minutes
         online = loaded['pool']['online']
@@ -249,7 +251,10 @@ def castXMRCheck():
 
         if not warmupReached(metrics['hashrate']):
             #moving average is not accurate yet, so return.
-            print('SMA is not ready yet. Waiting...' + bcolors.ENDC)
+            if not printed:
+                print('SMA is not ready yet. Waiting.')
+            else:
+                print('.')
             return
 
         else:
