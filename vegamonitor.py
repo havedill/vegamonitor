@@ -308,7 +308,7 @@ def castXMRCheck():
                 restartreason += "\n{} - Too many rejected shares".format(now)
                 restartMiner()
 
-        print(bcolors.OKGREEN + 'Hashrate: {}H/s\nWeb request returns: {}\n'.format(currenthash, response.status_code) + bcolors.ENDC)
+        print(bcolors.OKGREEN + 'Hashrate: {}H/s\nWeb request returns: {}\n'.format(movingAverage(metrics['hashrate'], response.status_code) + bcolors.ENDC)
 
 if __name__ == '__main__':
     while True:
