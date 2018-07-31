@@ -232,9 +232,9 @@ def castXMRCheck():
         response = requests.get(url)
 
     except:
-        print(bcolors.FAIL + 'Local webserver threw exception. Is CastXMR down? Restarting just in case.' + bcolors.ENDC)
+        print(bcolors.FAIL + 'Local webserver threw exception.' + bcolors.ENDC)
         restartMiner()
-        restartreason += "\n{} - Webserver caught exception\n".format(now)
+        restartreason += "\n{} - Webserver caught exception".format(now)
         return
 
     if response.status_code > 300:
@@ -295,7 +295,7 @@ def castXMRCheck():
 
             elif crashedGPU() is not None:
                 print(bcolors.FAIL + 'GPU{} has crashed! Resetting all miner settings'.format(crashedGPU()) + bcolors.ENDC)
-                restartreason += "\n{} - Identical hashrate for GPU -- GPU{} crash".format(now, crashedGPU())
+                restartreason += "\n{} - GPU{} crash".format(now, crashedGPU())
                 restartMiner()
 
             elif checkEqual(metrics['onlinetime']):
