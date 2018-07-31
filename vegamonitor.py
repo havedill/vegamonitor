@@ -283,7 +283,7 @@ def castXMRCheck():
             return
 
         else:
-            print(bcolors.OKGREEN + 'Hashrate: {}H/s\nWeb request returns: {}\n'.format(movingAverage(metrics['hashrate'], response.status_code) + bcolors.ENDC)
+            print(bcolors.OKGREEN + 'Hashrate: {}H/s\nWeb request returns: {}\n'.format(movingAverage(metrics['hashrate'], response.status_code) + bcolors.ENDC))
             if movingAverage(metrics['hashrate']) < hashthreshold:
                 print(bcolors.FAIL + 'SMA Hashrate is below set threshold! Resetting all miner settings' + bcolors.ENDC)
                 restartreason += "\n{} - Low Hashrate ({} H/s)".format(now, movingAverage(metrics['hashrate']))
