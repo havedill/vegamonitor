@@ -296,7 +296,7 @@ def castXMRCheck():
 
             elif crashedGPU() is not None:
                 print(bcolors.FAIL + 'GPU{} has crashed! Resetting all miner settings'.format(crashedGPU()) + bcolors.ENDC)
-                restartreason += "\n{} - GPU{} crash".format(now, crashedGPU())
+                restartreason += "\n{} - GPU{} Crash".format(now, crashedGPU())
                 restartMiner()
 
             elif checkEqual(metrics['onlinetime']):
